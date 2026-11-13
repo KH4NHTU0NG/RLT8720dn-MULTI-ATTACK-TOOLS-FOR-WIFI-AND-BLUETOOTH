@@ -89,4 +89,31 @@ static inline bool decodeHexPayload(const String& hex_data, uint8_t* out_buf, si
     return true;
 }
 
+// Safely parse Complete/Shortened Local Name from BLE advertising payload with strict bounds checks.
+static inline String parseBleDeviceName(const uint8_t* p_adv, size_t len) {
+    if (!p_adv || len == 0) return String("[Unknown]");
+
+    size_t offset = 0;
+    while (offset < len) {
+        uint8_t ad_len = p_adv[offset];
+        if (ad_len == 0) break;
+        if (offset + 1 >= len) break;
+        if (offset + 1 + (size_t)ad_len > len) break;
+
+        uint8_t ad_type = p_adv[offset + 1];
+        if ((ad_type == 0x09 || ad_type == 0x08) && ad_len >= 2) {
+            char name_buf[32];
+            size_t name_len = (size_t)(ad_len - 1);
+            if (name_len > sizeof(name_buf) - 1) {
+                name_len = sizeof(name_buf) - 1;
+            }
+            memcpy(name_buf, &p_adv[offset + 2], name_len);
+            name_buf[name_len] = '\0';
+            return String(name_buf);
+        }
+        offset += (size_t)ad_len + 1;
+    }
+    return String("[Unknown]");
+}
+
 #endif // SECURITY_UTILS_H
