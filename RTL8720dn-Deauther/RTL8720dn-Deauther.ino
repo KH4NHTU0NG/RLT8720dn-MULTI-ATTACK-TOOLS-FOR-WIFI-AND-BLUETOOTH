@@ -53,6 +53,7 @@ const char *ssid = "RTL8720dn-Deauther";
 const char *pass = "0123456789";
 
 int current_channel = 1;
+static bool channel_needs_restore = true;
 std::vector<WiFiScanResult> scan_results;
 std::map<int, std::vector<int>> deauth_channels;
 std::vector<int> chs_idx;
@@ -558,6 +559,7 @@ void loop() {
     static int csa_ghost_idx = 0;
 
     oled_attack_start();  // OLED: reset uptime counter
+    channel_needs_restore = true;
 
     while (true) {
         if (isInterfering) {
@@ -746,6 +748,7 @@ void loop() {
       client.write(makeRedirect("/").c_str());
       oled_show_scanning();  // OLED: show scanning screen
       scanNetworks();
+      channel_needs_restore = true;
       // OLED: update idle screen with new AP counts
       {
         int c24 = 0, c5g = 0;
@@ -964,6 +967,12 @@ void loop() {
     }
 end_request:;
   }
-  
-  wext_set_channel(WLAN0_NAME, current_channel);
+
+  static int last_idle_channel = -1;
+  if (channel_needs_restore || last_idle_channel != current_channel) {
+    wext_set_channel(WLAN0_NAME, current_channel);
+    last_idle_channel = current_channel;
+    channel_needs_restore = false;
+  }
+  delay(2);
 }
