@@ -38,7 +38,7 @@ Dự án này được viết và biên dịch thông qua môi trường **Ardui
 
 ---
 
-##  Cảnh báo trách nhiệm (Disclaimer)
+## Cảnh báo trách nhiệm (Disclaimer)
 
 Bộ công cụ này được phát triển **CHỈ DÀNH CHO MỤC ĐÍCH GIÁO DỤC VÀ NGHIÊN CỨU BẢO MẬT (Educational Purposes Only)**. 
 
