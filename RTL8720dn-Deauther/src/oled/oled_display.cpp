@@ -440,7 +440,7 @@ void oled_show_spammer(int ssid_count) {
     _draw_header(" > SSID FLOOD");
     _draw_sep(15);
     char buf[16];
-    sprintf(buf, "%d", ssid_count);
+    snprintf(buf, sizeof(buf), "%d", ssid_count);
     _text(4, 18, "SSIDs: ", 1);
     _text(46, 12, buf, 2);
     _text(4, 38, "Mode: Beacon Flood", 1);
