@@ -315,13 +315,8 @@ bool add_interference_target(uint8_t* target_bssid, int channel) {
 // PUBLIC API: Stop all interference
 // ===================================================================
 void stop_interference() {
-    for (int i = 0; i < MAX_INTERFERENCE_TARGETS; i++) {
-        targets[i].state = INT_STATE_IDLE;
-        if (targets[i].payload) { free(targets[i].payload); targets[i].payload = NULL; }
-        targets[i].payload_len = 0;
-    }
+    _reset_all_targets();
     num_targets = 0;
-    wifi_set_promisc((rtw_rcr_level_t)0, NULL, 0);
     digitalWrite(LED_B, LOW);
     digitalWrite(LED_G, LOW);
     digitalWrite(LED_R, HIGH);
