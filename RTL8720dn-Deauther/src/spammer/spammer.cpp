@@ -96,6 +96,7 @@ String SSIDSpammer::_generateRandomSSID(int length) {
 }
 
 void SSIDSpammer::_craftAndSend(const String& ssid, uint8_t* bssid, int channel) {
+    if (bssid == nullptr) return;
     uint8_t frame[MAX_BEACON_SIZE];
     size_t offset = 0;
 
@@ -116,12 +117,16 @@ void SSIDSpammer::_craftAndSend(const String& ssid, uint8_t* bssid, int channel)
     frame[offset++] = 0x11; frame[offset++] = 0x04;
 
     // 3. Management Payload (Tags)
-    
+    size_t ssid_len = ssid.length();
+    if (ssid_len > MAX_SSID_LEN) ssid_len = MAX_SSID_LEN;
+
     // Tag 0: SSID
     frame[offset++] = 0x00; // Tag Number
-    frame[offset++] = ssid.length(); // Tag Length
-    memcpy(&frame[offset], ssid.c_str(), ssid.length());
-    offset += ssid.length();
+    frame[offset++] = (uint8_t)ssid_len; // Tag Length
+    if (ssid_len > 0) {
+        memcpy(&frame[offset], ssid.c_str(), ssid_len);
+        offset += ssid_len;
+    }
 
     // Tag 1: Supported Rates (1, 2, 5.5, 11, 6, 9, 12, 18 mbps)
     uint8_t rates[] = {0x01, 0x08, 0x82, 0x84, 0x8B, 0x96, 0x0C, 0x12, 0x18, 0x24};
