@@ -1,0 +1,8 @@
+.DS_Store
+**/.DS_Store
+build/
+*.bin
+*.elf
+*.o
+*.a
+tests/bin/
