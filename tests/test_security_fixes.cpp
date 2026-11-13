@@ -67,10 +67,70 @@ static void test_url_decode() {
     ASSERT_STREQ(urlDecode("abc%ZZ123"), "abc%ZZ123");
 }
 
+static void test_ble_device_name_parser() {
+    ASSERT_STREQ(parseBleDeviceName(nullptr, 0), "[Unknown]");
+    uint8_t dummy = 0;
+    ASSERT_STREQ(parseBleDeviceName(&dummy, 0), "[Unknown]");
+
+    // Valid AD flags + Complete Local Name (0x09)
+    {
+        const uint8_t raw[] = {0x02, 0x01, 0x06, 0x06, 0x09, 'B', 'W', '1', '6', 'A'};
+        uint8_t* heap_adv = new uint8_t[sizeof(raw)];
+        std::memcpy(heap_adv, raw, sizeof(raw));
+        ASSERT_STREQ(parseBleDeviceName(heap_adv, sizeof(raw)), "BW16A");
+        delete[] heap_adv;
+    }
+
+    // Valid Shortened Local Name (0x08)
+    {
+        const uint8_t raw[] = {0x05, 0x08, 'T', 'e', 's', 't'};
+        ASSERT_STREQ(parseBleDeviceName(raw, sizeof(raw)), "Test");
+    }
+
+    // ad_len == 0 must break immediately without infinite loop
+    {
+        const uint8_t raw[] = {0x00, 0x09, 'X'};
+        ASSERT_STREQ(parseBleDeviceName(raw, sizeof(raw)), "[Unknown]");
+    }
+
+    // ad_len == 1 with 0x09 (previously caused unsigned underflow / OOB read)
+    {
+        uint8_t* heap_adv = new uint8_t[2]{0x01, 0x09};
+        ASSERT_STREQ(parseBleDeviceName(heap_adv, 2), "[Unknown]");
+        delete[] heap_adv;
+    }
+
+    // Truncated TLV where offset + 1 + ad_len exceeds buffer length
+    {
+        uint8_t* heap_adv = new uint8_t[4]{0x10, 0x09, 'A', 'B'};
+        ASSERT_STREQ(parseBleDeviceName(heap_adv, 4), "[Unknown]");
+        delete[] heap_adv;
+    }
+
+    // Trailing single byte TLV header (offset + 1 >= len)
+    {
+        uint8_t* heap_adv = new uint8_t[1]{0x05};
+        ASSERT_STREQ(parseBleDeviceName(heap_adv, 1), "[Unknown]");
+        delete[] heap_adv;
+    }
+
+    // Long name (39 bytes) must be truncated cleanly to 31 bytes without stack overflow
+    {
+        uint8_t adv[41];
+        adv[0] = 40;
+        adv[1] = 0x09;
+        std::memset(&adv[2], 'Z', 39);
+        String parsed = parseBleDeviceName(adv, sizeof(adv));
+        ASSERT_EQ_INT(parsed.length(), 31);
+        ASSERT_STREQ(parsed, "ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ");
+    }
+}
+
 int main() {
     std::printf("Running RTL8720dn security unit tests...\n");
     test_html_escape();
     test_url_decode();
+    test_ble_device_name_parser();
     if (g_tests_failed > 0) {
         std::fprintf(stderr, "FAILED: %d / %d assertions\n", g_tests_failed, g_tests_run);
         return 1;
