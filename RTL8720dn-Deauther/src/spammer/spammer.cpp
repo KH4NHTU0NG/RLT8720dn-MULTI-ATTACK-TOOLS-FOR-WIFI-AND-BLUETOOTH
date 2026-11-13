@@ -2,6 +2,10 @@
 #include "wifi_conf.h"
 #include "../../debug.h"
 
+#ifndef MAX_SPAM_NETWORKS
+#define MAX_SPAM_NETWORKS 64
+#endif
+
 SSIDSpammer Spammer;
 
 SSIDSpammer::SSIDSpammer() : _active(false), _randomMode(false), _randomCount(10), _currentChannel(1), _lastChannelHop(0) {
@@ -12,6 +16,7 @@ SSIDSpammer::~SSIDSpammer() {
 }
 
 void SSIDSpammer::addSSID(String ssid) {
+    if (_networks.size() >= MAX_SPAM_NETWORKS) return;
     if (ssid.length() > MAX_SSID_LEN) ssid = ssid.substring(0, MAX_SSID_LEN);
     SpammedNetwork net;
     net.ssid = ssid;
