@@ -43,8 +43,20 @@ static int g_tests_failed = 0;
         }                                                                          \
     } while (0)
 
+static void test_html_escape() {
+    ASSERT_STREQ(htmlEscape(""), "");
+    ASSERT_STREQ(htmlEscape("FreeWiFi_5G"), "FreeWiFi_5G");
+    ASSERT_STREQ(htmlEscape("<script>alert(1)</script>"),
+                 "&lt;script&gt;alert(1)&lt;/script&gt;");
+    ASSERT_STREQ(htmlEscape("A\"'&<>B"),
+                 "A&quot;&#39;&amp;&lt;&gt;B");
+    ASSERT_STREQ(htmlEscape("'\" onfocus=\"alert(document.cookie)\""),
+                 "&#39;&quot; onfocus=&quot;alert(document.cookie)&quot;");
+}
+
 int main() {
     std::printf("Running RTL8720dn security unit tests...\n");
+    test_html_escape();
     if (g_tests_failed > 0) {
         std::fprintf(stderr, "FAILED: %d / %d assertions\n", g_tests_failed, g_tests_run);
         return 1;
