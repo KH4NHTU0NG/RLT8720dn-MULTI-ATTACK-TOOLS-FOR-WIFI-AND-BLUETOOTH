@@ -201,6 +201,20 @@ String makeRedirect(String url) {
   return buildHttpRedirectHeaders(url);
 }
 
+static void renderScanRow(WiFiClient &client, const WiFiScanResult &ap, uint32_t idx) {
+  int colorWidth = ap.rssi + 130;
+  String color = (colorWidth < 50) ? "meter_red" : (colorWidth < 70) ? "meter_orange" : "meter_green";
+  int width = clampRssiPercent(ap.rssi);
+  String safe_ssid = (ap.ssid.length() > 0) ? htmlEscape(ap.ssid) : "**HIDDEN**";
+
+  client.print("<tr><td>" + safe_ssid + "</td>");
+  client.print("<td class='tdFixed'>" + String(ap.channel) + "</td>");
+  client.print("<td>" + htmlEscape(ap.bssid_str) + "</td>");
+  client.print("<td class='tdMeter'><div class='meter_background'><div class='meter_forground " + color + "' style='width: " + String(width) + "%'><div class='meter_value'>" + String(ap.rssi) + "</div></div></div></td>");
+  client.print("<td><label class='checkBoxContainer'><input type='checkbox' name='network' value='" + String(idx) + "'><span class='checkmark'></span></label></td>");
+  client.print("<td><label class='checkBoxContainer'><input type='checkbox' name='interfere' value='" + String(idx) + "'><span class='checkmark' style='background:#7289da;'></span></label></td></tr>");
+}
+
 void handleRoot(WiFiClient &client) {
   // Gửi Header trực tiếp để tiết kiệm RAM
   client.print(buildHttpResponseHeaders(200, "text/html"));
