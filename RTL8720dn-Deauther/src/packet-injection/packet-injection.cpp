@@ -8,13 +8,27 @@
  * @param size The size of the frame
 */
 void wifi_tx_raw_frame(void* frame, size_t length) {
-  uint8_t *ptr = (uint8_t *)**(uint32_t **)(rltk_wlan_info + 0x10);
+  if (frame == nullptr || length == 0 || length > 1536 || rltk_wlan_info == nullptr) {
+    return;
+  }
+  uint32_t **wlan_ptr = (uint32_t **)(rltk_wlan_info + 0x10);
+  if (*wlan_ptr == nullptr) {
+    return;
+  }
+  uint8_t *ptr = (uint8_t *)(**wlan_ptr);
+  if (ptr == nullptr) {
+    return;
+  }
   uint8_t *frame_control = (uint8_t *)alloc_mgtxmitframe(ptr + 0xa80);
 
-  if (frame_control != 0) {
+  if (frame_control != nullptr) {
     update_mgntframe_attrib(ptr, frame_control + 8);
-    memset((void *)*(uint32_t *)(frame_control + 0x80), 0, 0x68);
-    uint8_t *frame_data = (uint8_t *)*(uint32_t *)(frame_control + 0x80) + 0x28;
+    uint8_t *tx_buf = (uint8_t *)*(uint32_t *)(frame_control + 0x80);
+    if (tx_buf == nullptr) {
+      return;
+    }
+    memset((void *)tx_buf, 0, 0x68);
+    uint8_t *frame_data = tx_buf + 0x28;
     memcpy(frame_data, frame, length);
     *(uint32_t *)(frame_control + 0x14) = length;
     *(uint32_t *)(frame_control + 0x18) = length;
