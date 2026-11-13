@@ -40,9 +40,10 @@ static int         num_targets    = 0;  // How many targets are registered
 static int         active_target  = 0;  // Round-robin index
 
 // Per-cycle counters (shared, reset on new attack session)
-static uint32_t cycle_counter  = 0;
-static int      adj_hop_idx    = 0;
-static int      csa_idx        = 0;
+static uint32_t      cycle_counter  = 0;
+static int           adj_hop_idx    = 0;
+static int           csa_idx        = 0;
+static volatile bool sniffer_active = false;
 
 // Global MAC counter – declared as a true global so it never resets between
 // start_interference() calls. This ensures the auth-flood MACs are always
@@ -119,9 +120,12 @@ static void _build_synthetic_payload(BeaconClone* t) {
 
 // Activate synthetic payload fallback for a target and stop its sniffer.
 static void _activate_synthetic(BeaconClone* t) {
+    if (!t) return;
+    // Stop promiscuous callback before mutating target payload to avoid RX race/UAF.
+    sniffer_active = false;
+    wifi_set_promisc((rtw_rcr_level_t)0, NULL, 0);
     _build_synthetic_payload(t);
     if (t->payload) {
-        wifi_set_promisc((rtw_rcr_level_t)0, NULL, 0);
         DEBUG_SER_PRINT("[!] INT: Synthetic fallback for CH" + String(t->target_channel) + "\n");
         digitalWrite(LED_G, LOW);
     } else {
@@ -137,11 +141,11 @@ static void _activate_synthetic(BeaconClone* t) {
 // ===================================================================
 static void _beacon_sniffer_cb(unsigned char* frame, unsigned int len, void* arg) {
     (void)arg;
-    if (len < 24) return;
+    if (!sniffer_active || !frame || len < 24) return;
 
     // Find which target is currently in capturing state
     BeaconClone* t = NULL;
-    for (int i = 0; i < num_targets; i++) {
+    for (int i = 0; i < num_targets && i < MAX_INTERFERENCE_TARGETS; i++) {
         if (targets[i].state == INT_STATE_CAPTURING) {
             t = &targets[i];
             break;
@@ -160,24 +164,33 @@ static void _beacon_sniffer_cb(unsigned char* frame, unsigned int len, void* arg
     // Filter: only accept beacons from our target BSSID
     if (memcmp(&frame[offset + 16], t->bssid, 6) != 0) return;
 
-    // === CAPTURED ===
-    memcpy(&t->beacon_interval, &frame[offset + 32], 2);
-    memcpy(&t->capabilities,    &frame[offset + 34], 2);
-
     size_t tags_len = len - (offset + 36);
     if (tags_len > 400) tags_len = 400;
     if (tags_len == 0)  return;
 
-    if (t->payload) free(t->payload);
+    // Disarm sniffer before mutating payload/state so queued RX frames bail early.
+    sniffer_active = false;
+    wifi_set_promisc((rtw_rcr_level_t)0, NULL, 0);
+
+    // === CAPTURED ===
+    memcpy(&t->beacon_interval, &frame[offset + 32], 2);
+    memcpy(&t->capabilities,    &frame[offset + 34], 2);
+
+    if (t->payload) {
+        free(t->payload);
+        t->payload = NULL;
+        t->payload_len = 0;
+    }
     t->payload = (uint8_t*)malloc(tags_len);
     if (t->payload) {
         memcpy(t->payload, &frame[offset + 36], tags_len);
         t->payload_len = tags_len;
         t->state       = INT_STATE_ACTIVE;
-        wifi_set_promisc((rtw_rcr_level_t)0, NULL, 0);
         DEBUG_SER_PRINT("[+] INT: REAL beacon captured! CH" + String(t->target_channel) +
                         " Tags=" + String(tags_len) + "B\n");
         digitalWrite(LED_G, LOW);
+    } else {
+        t->state = INT_STATE_IDLE;
     }
 }
 
@@ -185,13 +198,16 @@ static void _beacon_sniffer_cb(unsigned char* frame, unsigned int len, void* arg
 // INTERNAL: Start sniffing for a specific target index.
 // ===================================================================
 static void _start_sniffer_for(int idx) {
+    if (idx < 0 || idx >= MAX_INTERFERENCE_TARGETS) return;
     BeaconClone* t = &targets[idx];
+    sniffer_active = false;
     wifi_set_promisc((rtw_rcr_level_t)0, NULL, 0);
     delay(30);
     wifi_enter_promisc_mode();
     delay(80);
     wext_set_channel(WLAN0_NAME, t->target_channel);
     delay(CHANNEL_SWITCH_DELAY_MS * 4);  // Longer settle for capture
+    sniffer_active = true;
     wifi_set_promisc((rtw_rcr_level_t)2, _beacon_sniffer_cb, 0);
     DEBUG_SER_PRINT("[*] INT: Sniffer on CH" + String(t->target_channel) + "\n");
 }
