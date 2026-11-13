@@ -94,6 +94,7 @@ void wifi_tx_beacon_frame(void* src_mac, void* dst_mac, const char *ssid) {
 }
 
 void wifi_tx_auth_frame(void* src_mac, void* dst_mac) {
+  if (src_mac == nullptr || dst_mac == nullptr) return;
   AuthFrame frame;
   memcpy(&frame.source, src_mac, 6);
   memcpy(&frame.access_point, dst_mac, 6);
@@ -102,6 +103,7 @@ void wifi_tx_auth_frame(void* src_mac, void* dst_mac) {
 }
 
 void wifi_tx_assoc_frame(void* src_mac, void* dst_mac) {
+  if (src_mac == nullptr || dst_mac == nullptr) return;
   AssocFrame frame;
   memcpy(&frame.source, src_mac, 6);
   memcpy(&frame.access_point, dst_mac, 6);
@@ -110,6 +112,7 @@ void wifi_tx_assoc_frame(void* src_mac, void* dst_mac) {
 }
 
 void wifi_tx_null_frame(void* src_mac, void* dst_mac) {
+  if (src_mac == nullptr || dst_mac == nullptr) return;
   NullFrame frame;
   memcpy(&frame.source, src_mac, 6);
   memcpy(&frame.access_point, dst_mac, 6);
