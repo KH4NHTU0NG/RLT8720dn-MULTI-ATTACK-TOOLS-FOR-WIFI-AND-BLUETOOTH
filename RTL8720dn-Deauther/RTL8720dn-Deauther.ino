@@ -48,8 +48,9 @@ typedef struct {
   uint8_t channel;
 } WiFiScanResult;
 
-char *ssid = "RTL8720dn-Deauther";
-char *pass = "0123456789";
+// Security note: Change default SoftAP passphrase before field deployment (CWE-798).
+const char *ssid = "RTL8720dn-Deauther";
+const char *pass = "0123456789";
 
 int current_channel = 1;
 std::vector<WiFiScanResult> scan_results;
@@ -382,7 +383,7 @@ void setup() {
   delay(1500);
 
   String ap_ch = String(current_channel);
-  WiFi.apbegin(ssid, pass, (char *)ap_ch.c_str());
+  WiFi.apbegin((char *)ssid, (char *)pass, (char *)ap_ch.c_str());
 
   // === OLED: Scanning screen ===
   oled_show_scanning();
