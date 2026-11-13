@@ -172,8 +172,8 @@ std::vector<std::pair<String, String>> parsePost(String &request) {
         int delimiter_position = key_value_pair.indexOf('=');
 
         if (delimiter_position != -1) {
-            String key = key_value_pair.substring(0, delimiter_position);
-            String value = key_value_pair.substring(delimiter_position + 1);
+            String key = urlDecode(key_value_pair.substring(0, delimiter_position));
+            String value = urlDecode(key_value_pair.substring(delimiter_position + 1));
             post_params.push_back({key, value}); // Add the key-value pair to the vector
         }
 
@@ -185,8 +185,8 @@ std::vector<std::pair<String, String>> parsePost(String &request) {
     String key_value_pair = post_data.substring(start);
     int delimiter_position = key_value_pair.indexOf('=');
     if (delimiter_position != -1) {
-        String key = key_value_pair.substring(0, delimiter_position);
-        String value = key_value_pair.substring(delimiter_position + 1);
+        String key = urlDecode(key_value_pair.substring(0, delimiter_position));
+        String value = urlDecode(key_value_pair.substring(delimiter_position + 1));
         post_params.push_back({key, value});
     }
 
@@ -792,24 +792,22 @@ void loop() {
       for (auto &param : post_data) {
         if (param.first == "ssids") {
           String ssids_raw = param.second;
-          ssids_raw.replace("%0D", ""); // Loại bỏ carriage return
+          ssids_raw.replace("\r", "");
           int start = 0;
-          int end = ssids_raw.indexOf("%0A"); // Tách theo line feed
+          int end = ssids_raw.indexOf('\n');
           while (end != -1) {
             String s = ssids_raw.substring(start, end);
-            s.replace("+", " ");
             s.trim();
-            if (s.length() > 0) spam_ssids.push_back(s);
-            start = end + 3;
-            end = ssids_raw.indexOf("%0A", start);
+            if (s.length() > 0 && spam_ssids.size() < 64) spam_ssids.push_back(s);
+            start = end + 1;
+            end = ssids_raw.indexOf('\n', start);
           }
           String s = ssids_raw.substring(start);
-          s.replace("+", " ");
           s.trim();
-          if (s.length() > 0) spam_ssids.push_back(s);
+          if (s.length() > 0 && spam_ssids.size() < 64) spam_ssids.push_back(s);
         } else if (param.first == "count") {
           int count = String(param.second).toInt();
-          beacons_per_ssid = (count > 0) ? count : 3;
+          beacons_per_ssid = (count > 0 && count <= 20) ? count : 3;
         }
       }
       if (!spam_ssids.empty()) {
