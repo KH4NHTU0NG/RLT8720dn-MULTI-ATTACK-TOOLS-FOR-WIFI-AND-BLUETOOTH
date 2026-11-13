@@ -1,4 +1,4 @@
-# 📡 RTL8720DN Multi-Attack Tool (Wi-Fi 2.4G/5G & Bluetooth)
+# RTL8720DN Multi-Attack Tool (Wi-Fi 2.4G/5G & Bluetooth)
 
 ![Platform](https://img.shields.io/badge/Platform-Arduino%20IDE-blue)
 ![Hardware](https://img.shields.io/badge/Hardware-RTL8720DN%20(BW16)-orange)
