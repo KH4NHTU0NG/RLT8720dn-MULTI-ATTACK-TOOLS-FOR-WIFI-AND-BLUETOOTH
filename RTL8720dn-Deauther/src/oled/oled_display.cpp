@@ -293,8 +293,8 @@ static void _draw_footer(uint32_t start_ms) {
     // Uptime
     uint32_t s = (millis() - start_ms) / 1000;
     char buf[16];
-    if (s >= 3600) sprintf(buf, "UP:%dh%02dm", (int)(s/3600), (int)((s%3600)/60));
-    else           sprintf(buf, "UP:%02d:%02d", (int)(s/60), (int)(s%60));
+    if (s >= 3600) snprintf(buf, sizeof(buf), "UP:%dh%02dm", (int)(s/3600), (int)((s%3600)/60));
+    else           snprintf(buf, sizeof(buf), "UP:%02d:%02d", (int)(s/60), (int)(s%60));
     _text(14, y, buf, 1);
     // Spinner
     char sp[2] = { _spinner[_anim_frame % 4], 0 };
