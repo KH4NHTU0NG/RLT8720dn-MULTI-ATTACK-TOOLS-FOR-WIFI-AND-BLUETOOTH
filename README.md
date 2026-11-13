@@ -13,7 +13,7 @@ Dự án mã nguồn mở dành cho mạch **RTL8720DN (BW16)**, cung cấp bộ
 * **Wi-Fi Scanner:** Quét và thu thập thông tin các mạng Wi-Fi xung quanh. *(Lưu ý: Cự ly quét xa hay gần phụ thuộc hoàn toàn vào chất lượng và dải tần của ăng-ten IPEX mà bạn gắn thêm).*
 * **Deauth Attack:** Tấn công Deauthentication, ngắt kết nối các thiết bị mục tiêu khỏi điểm truy cập Wi-Fi (Hoạt động tốt trên cả băng tần 2.4G và 5G).
 * **Channel Interference:** Gây nhiễu tín hiệu trên các kênh truyền cụ thể.
-*    **Bluetooth Flooding (Testing):** Gửi hàng loạt gói tin rác để làm ngập lụt (flood) các thiết bị Bluetooth xung quanh. Tính năng này hiện đang trong quá trình thử nghiệm.
+* **Bluetooth Flooding (Testing):** Gửi hàng loạt gói tin rác để làm ngập lụt (flood) các thiết bị Bluetooth xung quanh. Tính năng này hiện đang trong quá trình thử nghiệm.
 *    **Bluetooth Control:** Tương tác, can thiệp và điều khiển các thiết bị Bluetooth lân cận.
 
 ---
