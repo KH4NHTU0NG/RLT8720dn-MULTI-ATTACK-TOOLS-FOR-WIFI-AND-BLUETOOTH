@@ -8,7 +8,7 @@ Dự án mã nguồn mở dành cho mạch **RTL8720DN (BW16)**, cung cấp bộ
 
 ---
 
-##  Các tính năng nổi bật (Features)
+## Các tính năng nổi bật (Features)
 
 *    **Wi-Fi Scanner:** Quét và thu thập thông tin các mạng Wi-Fi xung quanh. *(Lưu ý: Cự ly quét xa hay gần phụ thuộc hoàn toàn vào chất lượng và dải tần của ăng-ten IPEX mà bạn gắn thêm).*
 *    **Deauth Attack:** Tấn công Deauthentication, ngắt kết nối các thiết bị mục tiêu khỏi điểm truy cập Wi-Fi (Hoạt động tốt trên cả băng tần 2.4G và 5G).
