@@ -194,23 +194,16 @@ std::vector<std::pair<String, String>> parsePost(String &request) {
 }
 
 String makeResponse(int code, String content_type) {
-  String response = "HTTP/1.1 " + String(code) + " OK\n";
-  response += "Content-Type: " + content_type + "\n";
-  response += "Connection: close\n\n";
-  return response;
+  return buildHttpResponseHeaders(code, content_type);
 }
 
 String makeRedirect(String url) {
-  String response = "HTTP/1.1 307 Temporary Redirect\n";
-  response += "Location: " + url;
-  return response;
+  return buildHttpRedirectHeaders(url);
 }
 
 void handleRoot(WiFiClient &client) {
   // Gửi Header trực tiếp để tiết kiệm RAM
-  client.print("HTTP/1.1 200 OK\r\n");
-  client.print("Content-Type: text/html\r\n");
-  client.print("Connection: close\r\n\r\n");
+  client.print(buildHttpResponseHeaders(200, "text/html"));
 
   client.print(R"(
   <!DOCTYPE html>
