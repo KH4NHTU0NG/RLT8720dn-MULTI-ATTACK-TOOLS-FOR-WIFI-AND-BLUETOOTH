@@ -135,4 +135,24 @@ static inline int clampRssiPercent(int rssi) {
     return width;
 }
 
+// Build RFC 9112 compliant HTTP response headers with CRLF line endings.
+static inline String buildHttpResponseHeaders(int code, const String& content_type) {
+    const char* reason = (code == 404) ? "Not Found" : (code == 400) ? "Bad Request" : "OK";
+    String response = "HTTP/1.1 " + String(code) + " " + String(reason) + "\r\n";
+    response += "Content-Type: " + content_type + "\r\n";
+    response += "X-Content-Type-Options: nosniff\r\n";
+    response += "X-Frame-Options: DENY\r\n";
+    response += "Connection: close\r\n\r\n";
+    return response;
+}
+
+// Build RFC 9110/9112 compliant HTTP 303 See Other redirect (terminates POST->GET cleanly).
+static inline String buildHttpRedirectHeaders(const String& url) {
+    String response = "HTTP/1.1 303 See Other\r\n";
+    response += "Location: " + url + "\r\n";
+    response += "Content-Length: 0\r\n";
+    response += "Connection: close\r\n\r\n";
+    return response;
+}
+
 #endif // SECURITY_UTILS_H
