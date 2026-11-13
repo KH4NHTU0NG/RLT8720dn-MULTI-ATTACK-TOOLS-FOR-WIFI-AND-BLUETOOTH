@@ -366,9 +366,9 @@ void oled_show_idle(int ap24, int ap5g) {
     char buf[24];
     int total = ap24 + ap5g;
     _text(4, 18, "Networks: ", 1);
-    sprintf(buf, "%d", total);
+    snprintf(buf, sizeof(buf), "%d", total);
     _text(64, 12, buf, 2);  // Big number
-    sprintf(buf, " 2.4G:%d  5GHz:%d", ap24, ap5g);
+    snprintf(buf, sizeof(buf), " 2.4G:%d  5GHz:%d", ap24, ap5g);
     _text(4, 36, buf, 1);
     _draw_sep(47);
     _text(4, 50, "WebUI: 192.168.1.1", 1);
