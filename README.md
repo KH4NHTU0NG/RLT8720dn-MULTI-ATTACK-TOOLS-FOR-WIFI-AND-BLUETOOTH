@@ -38,6 +38,22 @@ Dự án này được viết và biên dịch thông qua môi trường **Ardui
 
 ---
 
+## Security Audit & Testing
+
+Chi tiết các lỗ hổng an toàn bộ nhớ, HTTP/XSS và kiểm tra biên đã rà soát/khắc phục được tổng hợp trong [SECURITY_AUDIT.md](./SECURITY_AUDIT.md).
+
+Để chạy bộ kiểm thử host-side (`C++17`, AddressSanitizer + UndefinedBehaviorSanitizer) cho các hàm bảo vệ trong `RTL8720dn-Deauther/src/security/security_utils.h`:
+
+```sh
+mkdir -p tests/bin
+clang++ -std=c++17 -Wall -Wextra -Werror -fsanitize=address,undefined \
+  -Itests/mock -IRTL8720dn-Deauther/src/security \
+  tests/test_security_fixes.cpp -o tests/bin/test_security_fixes && \
+  ./tests/bin/test_security_fixes
+```
+
+---
+
 ## Cảnh báo trách nhiệm (Disclaimer)
 
 Bộ công cụ này được phát triển **CHỈ DÀNH CHO MỤC ĐÍCH GIÁO DỤC VÀ NGHIÊN CỨU BẢO MẬT (Educational Purposes Only)**. 
