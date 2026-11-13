@@ -229,12 +229,22 @@ static void _init_target(BeaconClone* t, uint8_t* bssid, int channel) {
 // ===================================================================
 // PUBLIC API: Single-target (backward compatible)
 // ===================================================================
-void start_interference(uint8_t* target_bssid, int channel) {
-    // Reset all targets
+static void _reset_all_targets() {
+    sniffer_active = false;
+    wifi_set_promisc((rtw_rcr_level_t)0, NULL, 0);
     for (int i = 0; i < MAX_INTERFERENCE_TARGETS; i++) {
-        if (targets[i].payload) { free(targets[i].payload); targets[i].payload = NULL; }
         targets[i].state = INT_STATE_IDLE;
+        if (targets[i].payload) {
+            free(targets[i].payload);
+            targets[i].payload = NULL;
+        }
+        targets[i].payload_len = 0;
     }
+}
+
+void start_interference(uint8_t* target_bssid, int channel) {
+    if (!target_bssid) return;
+    _reset_all_targets();
     num_targets  = 1;
     active_target = 0;
     cycle_counter = 0;
@@ -258,10 +268,7 @@ void start_interference(uint8_t* target_bssid, int channel) {
 // PUBLIC API: Multi-target — call this first to reset state
 // ===================================================================
 void start_interference_multi() {
-    for (int i = 0; i < MAX_INTERFERENCE_TARGETS; i++) {
-        if (targets[i].payload) { free(targets[i].payload); targets[i].payload = NULL; }
-        targets[i].state = INT_STATE_IDLE;
-    }
+    _reset_all_targets();
     num_targets   = 0;
     active_target = 0;
     cycle_counter = 0;
