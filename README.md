@@ -26,7 +26,7 @@ Dự án mã nguồn mở dành cho mạch **RTL8720DN (BW16)**, cung cấp bộ
 
 ---
 
-##  Cài đặt & Sử dụng (Installation)
+## Cài đặt & Sử dụng (Installation)
 
 Dự án này được viết và biên dịch thông qua môi trường **Arduino IDE**.
 
