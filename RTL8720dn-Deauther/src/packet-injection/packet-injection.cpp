@@ -191,10 +191,11 @@ void wifi_tx_beacon_csa_frame(void* src_mac, void* dst_mac, const char *ssid, ui
   
   // Tag 0: SSID
   frame[offset++] = 0; // Tag Number
-  int ssid_len = strlen(ssid);
-  frame[offset++] = ssid_len; // Tag Length
+  size_t ssid_len = strlen(ssid);
+  if (ssid_len > 32) ssid_len = 32;
+  frame[offset++] = (uint8_t)ssid_len; // Tag Length
   memcpy(&frame[offset], ssid, ssid_len);
-  offset += ssid_len;
+  offset += (int)ssid_len;
   
   // Tag 1: Supported Rates
   frame[offset++] = 1;
