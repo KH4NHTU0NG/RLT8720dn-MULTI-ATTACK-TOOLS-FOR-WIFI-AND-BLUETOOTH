@@ -11,6 +11,7 @@ namespace std { using ::rand; using ::Rand; }
 #include "src/interference/interference.h"
 #include "src/spammer/spammer.h"
 #include "src/oled/oled_display.h"
+#include "src/security/security_utils.h"
 #include "wifi_util.h"
 #include "wifi_structures.h"
 #include "debug.h"
