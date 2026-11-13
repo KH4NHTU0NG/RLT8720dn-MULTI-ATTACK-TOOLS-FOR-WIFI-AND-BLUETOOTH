@@ -671,8 +671,70 @@ void loop() {
       digitalWrite(LED_G, HIGH);
     }
     String request;
-    while (client.available()) {
-      request += (char)client.read();
+    request.reserve(1024);
+    bool req_oversized = false;
+    long content_length = -1;
+    int header_end = -1;
+    unsigned long req_start = millis();
+    while (client.connected() && (millis() - req_start < 250)) {
+      while (client.available()) {
+        int c = client.read();
+        if (c < 0) {
+          break;
+        }
+        if (request.length() >= MAX_HTTP_REQ_SIZE) {
+          req_oversized = true;
+          break;
+        }
+        request += (char)c;
+      }
+      if (req_oversized) {
+        break;
+      }
+      if (header_end < 0) {
+        header_end = request.indexOf("\r\n\r\n");
+        if (header_end >= 0) {
+          int cl_pos = request.indexOf("Content-Length:");
+          if (cl_pos < 0) {
+            cl_pos = request.indexOf("content-length:");
+          }
+          if (cl_pos >= 0 && cl_pos < header_end) {
+            int line_end = request.indexOf("\r\n", cl_pos);
+            if (line_end > cl_pos) {
+              String cl_val = request.substring(cl_pos + 15, line_end);
+              cl_val.trim();
+              content_length = cl_val.toInt();
+              if (content_length < 0 || (size_t)content_length > MAX_HTTP_REQ_SIZE) {
+                req_oversized = true;
+                break;
+              }
+            }
+          } else {
+            content_length = 0;
+          }
+        }
+      }
+      if (header_end >= 0 && content_length >= 0) {
+        size_t expected_total = (size_t)header_end + 4 + (size_t)content_length;
+        if (expected_total > MAX_HTTP_REQ_SIZE) {
+          req_oversized = true;
+          break;
+        }
+        if (request.length() >= expected_total && !client.available()) {
+          break;
+        }
+      }
+      if (!client.available()) {
+        delay(1);
+      }
+    }
+    if (req_oversized) {
+      client.write("HTTP/1.1 413 Payload Too Large\r\nContent-Type: text/plain\r\nConnection: close\r\n\r\nPayload Too Large");
+      client.stop();
+      if (led) {
+        digitalWrite(LED_G, LOW);
+      }
+      goto end_request;
     }
     DEBUG_SER_PRINT(request);
     String path = parseRequest(request);
