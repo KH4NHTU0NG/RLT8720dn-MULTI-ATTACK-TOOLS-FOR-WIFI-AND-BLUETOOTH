@@ -927,7 +927,7 @@ void loop() {
                           uint8_t val[MAX_BLE_WRITE_BYTES];
                           size_t decoded_len = 0;
                           if (decodeHexPayload(hex_data, val, sizeof(val), &decoded_len) && decoded_len > 0) {
-                              pChar->setData(val, (int)decoded_len);
+                              pChar->setData(val, (uint16_t)decoded_len);
                           }
                       }
                   }
