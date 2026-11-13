@@ -80,11 +80,13 @@ void wifi_tx_disassoc_frame(void* src_mac, void* dst_mac, uint16_t reason, void*
  * @param ssid '\0' terminated array of characters representing the SSID
 */
 void wifi_tx_beacon_frame(void* src_mac, void* dst_mac, const char *ssid) {
+  if (src_mac == nullptr || dst_mac == nullptr || ssid == nullptr) return;
   BeaconFrame frame;
+  frame.ssid_length = 0;
   memcpy(&frame.source, src_mac, 6);
   memcpy(&frame.access_point, src_mac, 6);
   memcpy(&frame.destination, dst_mac, 6);
-  for (int i = 0; ssid[i] != '\0'; i++) {
+  for (int i = 0; ssid[i] != '\0' && i < 32; i++) {
     frame.ssid[i] = ssid[i];
     frame.ssid_length++;
   }
