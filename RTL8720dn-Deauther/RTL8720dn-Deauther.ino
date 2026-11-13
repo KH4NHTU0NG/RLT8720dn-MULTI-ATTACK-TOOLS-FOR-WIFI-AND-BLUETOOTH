@@ -275,13 +275,7 @@ void handleRoot(WiFiClient &client) {
 
   for (uint32_t i = 0; i < scan_results.size(); i++) {
     if (scan_results[i].channel >= 36) {
-      String color = (scan_results[i].rssi + 130 < 50) ? "meter_red" : (scan_results[i].rssi + 130 < 70) ? "meter_orange" : "meter_green";
-      client.print("<tr><td>" + String((scan_results[i].ssid.length() > 0) ? scan_results[i].ssid : "**HIDDEN**") + "</td>");
-      client.print("<td class='tdFixed'>" + String(scan_results[i].channel) + "</td>");
-      client.print("<td>" + scan_results[i].bssid_str + "</td>");
-      client.print("<td class='tdMeter'><div class='meter_background'><div class='meter_forground " + color + "' style='width: " + String(scan_results[i].rssi + 120) + "%'><div class='meter_value'>" + String(scan_results[i].rssi) + "</div></div></div></td>");
-      client.print("<td><label class='checkBoxContainer'><input type='checkbox' name='network' value='" + String(i) + "'><span class='checkmark'></span></label></td>");
-      client.print("<td><label class='checkBoxContainer'><input type='checkbox' name='interfere' value='" + String(i) + "'><span class='checkmark' style='background:#7289da;'></span></label></td></tr>");
+      renderScanRow(client, scan_results[i], i);
     }
   }
 
