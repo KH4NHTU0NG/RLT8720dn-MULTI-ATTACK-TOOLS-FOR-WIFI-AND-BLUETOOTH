@@ -127,4 +127,12 @@ static inline String sanitizeSsid(const uint8_t* raw_ssid, size_t raw_len) {
     return String(ssid_buf);
 }
 
+// Clamp RSSI signal meter width percentage to valid [0, 100] CSS range.
+static inline int clampRssiPercent(int rssi) {
+    int width = rssi + 120;
+    if (width < 0) return 0;
+    if (width > 100) return 100;
+    return width;
+}
+
 #endif // SECURITY_UTILS_H
