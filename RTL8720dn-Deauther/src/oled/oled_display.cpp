@@ -382,7 +382,7 @@ void oled_show_deauth(int num_targets, uint32_t frames) {
     _draw_header(" > DEAUTH ACTIVE");
     _draw_sep(15);
     char buf[24];
-    sprintf(buf, "Targets: %d", num_targets);
+    snprintf(buf, sizeof(buf), "Targets: %d", num_targets);
     _text(4, 18, buf, 1);
     _draw_sep(28);
     _text(4, 31, "Frames:", 1);
