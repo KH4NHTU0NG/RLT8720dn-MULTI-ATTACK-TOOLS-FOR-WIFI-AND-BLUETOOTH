@@ -110,18 +110,19 @@ void bleScanCallback(T_LE_CB_DATA *p_data) {
 bool led = true;
 
 rtw_result_t scanResultHandler(rtw_scan_handler_result_t *scan_result) {
+  if (scan_result == nullptr) return RTW_SUCCESS;
   rtw_scan_result_t *record;
   if (scan_result->scan_complete == 0) {
+    if (scan_results.size() >= MAX_SCAN_RESULTS) return RTW_SUCCESS;
     record = &scan_result->ap_details;
-    record->SSID.val[record->SSID.len] = 0;
     WiFiScanResult result;
-    result.ssid = String((const char *)record->SSID.val);
+    result.ssid = sanitizeSsid(record->SSID.val, record->SSID.len);
     result.channel = record->channel;
     result.rssi = record->signal_strength;
     memcpy(&result.bssid, &record->BSSID, 6);
-    char bssid_str[] = "XX:XX:XX:XX:XX:XX";
+    char bssid_str[18];
     snprintf(bssid_str, sizeof(bssid_str), "%02X:%02X:%02X:%02X:%02X:%02X", result.bssid[0], result.bssid[1], result.bssid[2], result.bssid[3], result.bssid[4], result.bssid[5]);
-    result.bssid_str = bssid_str;
+    result.bssid_str = String(bssid_str);
     scan_results.push_back(result);
   }
   return RTW_SUCCESS;
