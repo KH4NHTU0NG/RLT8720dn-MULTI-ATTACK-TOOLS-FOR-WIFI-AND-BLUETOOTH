@@ -32,7 +32,7 @@ Dự án này được viết và biên dịch thông qua môi trường **Ardui
 
 1. Tải và cài đặt [Arduino IDE](https://www.arduino.cc/en/software) phiên bản mới nhất.
 2. Cài đặt thư viện và core hỗ trợ cho board Realtek RTL8720DN (BW16) vào Arduino IDE. 
-   >  **Lưu ý:** *Nếu bạn chưa biết cách setup môi trường cho mạch này trên Arduino IDE, vui lòng chủ động tìm kiếm các video hướng dẫn trên YouTube với từ khóa: **"Setup RTL8720DN BW16 Arduino IDE"** để xem các bước thao tác trực quan nhất.*
+   > **Lưu ý:** *Nếu bạn chưa biết cách setup môi trường cho mạch này trên Arduino IDE, vui lòng chủ động tìm kiếm các video hướng dẫn trên YouTube với từ khóa: **"Setup RTL8720DN BW16 Arduino IDE"** để xem các bước thao tác trực quan nhất.*
 3. Mở file source code code của dự án bằng Arduino IDE.
 4. Cắm mạch vào máy tính, chọn đúng cổng thiết bị và nhấn **Upload**.
 
