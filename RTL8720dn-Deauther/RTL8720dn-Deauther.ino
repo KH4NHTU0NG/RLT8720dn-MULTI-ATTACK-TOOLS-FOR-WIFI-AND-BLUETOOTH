@@ -880,12 +880,19 @@ void loop() {
       }
       client.write(makeRedirect("/").c_str());
     } else if (path == "/blescan") {
+      BLE.end();
       BLE.init();
       BLE.beginCentral(1);
       BLE.setScanCallback(bleScanCallback);
       ble_results.clear();
-      BLE.configScan()->startScan(3000);
-      delay(3500); 
+      BLEScan* pScan = BLE.configScan();
+      if (pScan != nullptr) {
+        pScan->startScan(3000);
+        delay(3500);
+        pScan->stopScan();
+      }
+      BLE.setScanCallback(nullptr);
+      BLE.end();
       client.write(makeRedirect("/").c_str());
     } else if (path == "/blewrite") {
       std::vector<std::pair<String, String>> post_data = parsePost(request);
@@ -898,10 +905,12 @@ void loop() {
       }
       
       if (mac.length() > 0 && hex_data.length() > 0) {
+          BLE.end();
           BLE.init();
           BLE.beginCentral(1);
           // AmebaD kết nối qua configConnection
-          if (BLE.configConnection()->connect((char*)mac.c_str(), GAP_REMOTE_ADDR_LE_PUBLIC, 2000)) {
+          BLEConnect* pConn = BLE.configConnection();
+          if (pConn != nullptr && pConn->connect((char*)mac.c_str(), GAP_REMOTE_ADDR_LE_PUBLIC, 2000)) {
               BLEClient* pClient = BLE.addClient(0);
               if (pClient != nullptr) {
                   pClient->discoverServices();
@@ -920,8 +929,9 @@ void loop() {
                       }
                   }
               }
-              BLE.configConnection()->disconnect(0);
+              pConn->disconnect(0);
           }
+          BLE.end();
       }
       client.write(makeRedirect("/").c_str());
     } else if (path == "/blespam") {
