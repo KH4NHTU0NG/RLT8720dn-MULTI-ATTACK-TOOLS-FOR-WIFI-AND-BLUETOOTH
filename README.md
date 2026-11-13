@@ -21,7 +21,7 @@ Dự án mã nguồn mở dành cho mạch **RTL8720DN (BW16)**, cung cấp bộ
 ## Yêu cầu phần cứng (Hardware Requirements)
 
 * Board mạch **RTL8720DN (Module BW16)**.
-*   Ăng-ten ngoài chuẩn **IPEX** (Khuyến nghị dùng ăng-ten có độ lợi cao, hỗ trợ dual-band 2.4G/5G để tối ưu cự ly tấn công/quét).
+* Ăng-ten ngoài chuẩn **IPEX** (Khuyến nghị dùng ăng-ten có độ lợi cao, hỗ trợ dual-band 2.4G/5G để tối ưu cự ly tấn công/quét).
 *   Cáp kết nối dữ liệu phù hợp với board mạch.
 
 ---
