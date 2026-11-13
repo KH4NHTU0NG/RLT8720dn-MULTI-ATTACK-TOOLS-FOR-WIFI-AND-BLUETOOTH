@@ -398,7 +398,7 @@ void oled_show_interference(int active, int max_t) {
     _draw_header(" > INTERFERENCE");
     _draw_sep(15);
     char buf[24];
-    sprintf(buf, "Targets: %d/%d", active, max_t);
+    snprintf(buf, sizeof(buf), "Targets: %d/%d", active, max_t);
     _text(4, 18, buf, 1);
     _text(4, 30, "State: ", 1);
     if (active > 0) {
