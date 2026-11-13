@@ -29,8 +29,34 @@ The audit identified **1 Critical**, **4 High**, **4 Medium**, and **3 Low** sev
 
 ---
 
-## 3. Remediation Plan
+## 3. Remediation Status
 
-1. Extract reusable input sanitizers, bounds-checked parsers, and validation helpers into `RTL8720dn-Deauther/src/security/security_utils.h`.
-2. Patch all identified vulnerabilities atomically across `.ino` and `src/` modules.
-3. Implement a host-side C++17 unit test suite (`tests/test_security_fixes.cpp`) compiled with `-fsanitize=address,undefined` to verify all security controls and edge cases.
+| ID | Status | Implemented Control |
+| :--- | :--- | :--- |
+| SEC-01 | Fixed | Replaced VLA `uint8_t val[len]` in `/blewrite` with fixed buffer `val[MAX_BLE_WRITE_BYTES]` (512 bytes) decoded via `decodeHexPayload`, plus `pClient` and `pConn` null checks and `(uint16_t)` length match. |
+| SEC-02 | Fixed | Added `htmlEscape()` helper and applied HTML character escaping (`& < > " '`) across Wi-Fi SSID rows (`renderScanRow`), BLE device names/MACs, and added `type="button"` on non-submit action buttons. |
+| SEC-03 | Fixed | Replaced raw BLE AD length indexing in `bleScanCallback` with bounds-checked `parseBleDeviceName()`, guarded null `p_data` pointers, and replaced `sprintf` with `snprintf` for `mac_str`. |
+| SEC-04 | Fixed | Replaced in-place SDK struct mutation (`record->SSID.val[len] = 0`) with `sanitizeSsid()` copy and capped `scan_results` at `MAX_SCAN_RESULTS` (64). |
+| SEC-05 | Fixed | Pre-allocated HTTP request buffer (`request.reserve(1024)`), enforced `MAX_HTTP_REQ_SIZE` (4096) with HTTP `413 Payload Too Large` rejection, and added bounded 250 ms TCP read loop with `Content-Length` tracking. |
+| SEC-06 | Fixed | Standardized RFC 9112 CRLF headers (`buildHttpResponseHeaders`), RFC 9110 `303 See Other` redirects with `\r\n\r\n` (`buildHttpRedirectHeaders`), `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, and `urlDecode()` with `%00` null-byte stripping in `parsePost`. |
+| SEC-07 | Fixed | Added `static volatile bool sniffer_active` and extracted `_reset_all_targets()` in `src/interference/interference.cpp` so `wifi_set_promisc(0, NULL, 0)` always disarms RX callbacks before freeing `payload` or activating synthetic fallback. |
+| SEC-08 | Fixed | Added null-pointer and length bounds (`1..1536`) in `wifi_tx_raw_frame`, `i < 32` SSID bounds in `wifi_tx_beacon_frame` and `wifi_tx_beacon_csa_frame`, and null guards in `wifi_tx_auth_frame`, `wifi_tx_assoc_frame`, and `wifi_tx_null_frame`. |
+| SEC-09 | Partially Fixed | Eliminated idle `wext_set_channel` WLAN driver hammering via state tracking (`channel_needs_restore`, `last_idle_channel`, `delay(2)`), converted SoftAP `ssid`/`pass` to `const char*` with CWE-798 warning. Credential rotation and Web UI auth/CSRF remain deployment hardening items. |
+| SEC-10 | Fixed | Replaced all `sprintf` calls in `src/oled/oled_display.cpp` (`_draw_footer`, `_draw_big_num`, `oled_show_idle`, `oled_show_deauth`, `oled_show_interference`, `oled_show_spammer`) with `snprintf(..., sizeof(buf), ...)`. |
+| SEC-11 | Fixed | Capped `_networks` to `MAX_SPAM_NETWORKS` (64) in `SSIDSpammer::addSSID`, guarded `bssid == nullptr` and clamped SSID IE length to `MAX_SSID_LEN` in `_craftAndSend`. |
+| SEC-12 | Fixed | Added `clampRssiPercent()` `[0, 100]` CSS clamp in `renderScanRow` and full `BLE.configScan()->stopScan()`, `BLE.setScanCallback(nullptr)`, and `BLE.end()` teardown after `/blescan` and `/blewrite`. |
+
+---
+
+## 4. Host Verification (ASan & UBSan)
+
+Because `arduino-cli` and an RTL8720DN hardware target were not connected during this host audit, security utility logic and buffer-boundary controls were compiled and verified locally on macOS using a lightweight `Arduino.h` `String` mock (`tests/mock/Arduino.h`) with AddressSanitizer and UndefinedBehaviorSanitizer enabled:
+
+```sh
+clang++ -std=c++17 -Wall -Wextra -Werror -fsanitize=address,undefined \
+  -Itests/mock -IRTL8720dn-Deauther/src/security \
+  tests/test_security_fixes.cpp -o tests/bin/test_security_fixes && \
+  ./tests/bin/test_security_fixes
+```
+
+Verified result: `PASSED: 59 assertions` with zero compiler warnings and zero ASan/UBSan violations across `htmlEscape`, `urlDecode` (`%00` blocking & OOB percent parsing), `parseBleDeviceName` (heap-allocated malformed/underflow/truncated TLV payloads), `decodeHexPayload` (odd/non-hex/oversized inputs), `sanitizeSsid` (heap-allocated non-NUL-terminated 32-byte SSIDs), `clampRssiPercent`, and RFC 9110/9112 HTTP headers.
