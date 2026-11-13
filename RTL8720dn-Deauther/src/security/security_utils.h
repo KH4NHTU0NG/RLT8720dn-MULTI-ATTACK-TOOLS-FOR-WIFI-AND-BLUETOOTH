@@ -31,4 +31,40 @@ static inline String htmlEscape(const String& input) {
     return out;
 }
 
+// Convert a single ASCII hex digit to 0..15, or -1 if invalid.
+static inline int hexNibble(char c) {
+    if (c >= '0' && c <= '9') return c - '0';
+    if (c >= 'a' && c <= 'f') return c - 'a' + 10;
+    if (c >= 'A' && c <= 'F') return c - 'A' + 10;
+    return -1;
+}
+
+// Decode application/x-www-form-urlencoded values while blocking null-byte injection.
+static inline String urlDecode(const String& src) {
+    String out;
+    out.reserve(src.length());
+    unsigned int len = src.length();
+    for (unsigned int i = 0; i < len; i++) {
+        char c = src[i];
+        if (c == '+') {
+            out += ' ';
+        } else if (c == '%' && (i + 2) < len) {
+            int hi = hexNibble(src[i + 1]);
+            int lo = hexNibble(src[i + 2]);
+            if (hi >= 0 && lo >= 0) {
+                char decoded = (char)((hi << 4) | lo);
+                if (decoded != '\0') {
+                    out += decoded;
+                }
+                i += 2;
+                continue;
+            }
+            out += c;
+        } else {
+            out += c;
+        }
+    }
+    return out;
+}
+
 #endif // SECURITY_UTILS_H
