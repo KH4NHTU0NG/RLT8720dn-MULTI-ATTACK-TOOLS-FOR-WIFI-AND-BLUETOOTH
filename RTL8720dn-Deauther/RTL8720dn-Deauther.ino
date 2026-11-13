@@ -306,9 +306,10 @@ void handleRoot(WiFiClient &client) {
   client.print(R"(<h2>BLE Auditor</h2><div class="right"><form method="post" action="/blescan"><input style="background: #7289da;" type="submit" value="SCAN BLE DEVICES"></form></div><table><tr><th>Name / MAC</th><th>RSSI</th><th>Action</th></tr>)");
 
   for (auto const& device : ble_results) {
-      client.print("<tr><td>" + device.name + "<br><small>" + device.address + "</small></td>");
+      String safe_addr = htmlEscape(device.address);
+      client.print("<tr><td>" + htmlEscape(device.name) + "<br><small>" + safe_addr + "</small></td>");
       client.print("<td>" + String(device.rssi) + "</td>");
-      client.print("<td><button onclick=\"document.getElementById('target_mac').value='" + device.address + "'\">Select</button></td></tr>");
+      client.print("<td><button type=\"button\" onclick=\"document.getElementById('target_mac').value='" + safe_addr + "'\">Select</button></td></tr>");
   }
 
   client.print(R"(</table><div class="centered"><form method="post" action="/blewrite" style="width: 90%; background: #2f3136; padding: 15px; border-radius: 8px; margin-top: 10px;">)");
