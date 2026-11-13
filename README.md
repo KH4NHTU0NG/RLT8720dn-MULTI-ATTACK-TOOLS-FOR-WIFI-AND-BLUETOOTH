@@ -45,5 +45,5 @@ Bộ công cụ này được phát triển **CHỈ DÀNH CHO MỤC ĐÍCH GIÁO
 * Bạn chỉ được phép sử dụng công cụ này trên các hệ thống mạng/thiết bị mà bạn sở hữu, hoặc đã được sự cho phép rõ ràng bằng văn bản từ chủ sở hữu.
 * Tác giả không chịu bất kỳ trách nhiệm pháp lý nào đối với các hành vi lạm dụng đoạn mã này để tấn công phá hoại, vi phạm pháp luật hoặc gây ảnh hưởng xấu đến hệ thống của người khác. Mọi hậu quả phát sinh do người dùng tự chịu trách nhiệm.
 
-*   Không phá mạng NHÀ NGƯỜI KHÁC!!!!!!!!!!
+* Không phá mạng NHÀ NGƯỜI KHÁC!!!!!!!!!!
 
