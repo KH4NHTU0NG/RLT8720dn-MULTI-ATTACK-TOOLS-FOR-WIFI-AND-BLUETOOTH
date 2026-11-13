@@ -86,43 +86,25 @@ std::vector<BLEAuditResult> ble_results;
 
 // Callback xử lý dữ liệu quét BLE cho AmebaD v3
 void bleScanCallback(T_LE_CB_DATA *p_data) {
+    if (p_data == nullptr || p_data->p_le_scan_info == nullptr) return;
     T_LE_SCAN_INFO *p_scan_info = p_data->p_le_scan_info;
     BLEAuditResult res;
     
-    // Convert MAC address to String
+    // Convert MAC address to String safely
     char mac_str[18];
-    sprintf(mac_str, "%02X:%02X:%02X:%02X:%02X:%02X", 
-            p_scan_info->bd_addr[5], p_scan_info->bd_addr[4], p_scan_info->bd_addr[3],
-            p_scan_info->bd_addr[2], p_scan_info->bd_addr[1], p_scan_info->bd_addr[0]);
+    snprintf(mac_str, sizeof(mac_str), "%02X:%02X:%02X:%02X:%02X:%02X", 
+             p_scan_info->bd_addr[5], p_scan_info->bd_addr[4], p_scan_info->bd_addr[3],
+             p_scan_info->bd_addr[2], p_scan_info->bd_addr[1], p_scan_info->bd_addr[0]);
     res.address = String(mac_str);
     res.rssi = p_scan_info->rssi;
-    res.name = "[Unknown]";
-
-    // Parse Device Name from Advert Data (Type 0x09 or 0x08)
-    uint8_t len = p_scan_info->data_len;
-    uint8_t *p_adv = p_scan_info->data;
-    uint8_t offset = 0;
-    while (offset < len) {
-        uint8_t ad_len = p_adv[offset];
-        if (ad_len == 0) break;
-        uint8_t ad_type = p_adv[offset + 1];
-        if (ad_type == 0x09 || ad_type == 0x08) { // Complete or Shortened Local Name
-            char name_buf[32];
-            uint8_t name_len = (ad_len - 1 < 31) ? ad_len - 1 : 31;
-            memcpy(name_buf, &p_adv[offset + 2], name_len);
-            name_buf[name_len] = '\0';
-            res.name = String(name_buf);
-            break;
-        }
-        offset += ad_len + 1;
-    }
+    res.name = parseBleDeviceName(p_scan_info->data, p_scan_info->data_len);
 
     // Tránh trùng lặp trong danh sách tạm
     bool exists = false;
-    for(const auto& item : ble_results) {
-        if(item.address == res.address) { exists = true; break; }
+    for (const auto& item : ble_results) {
+        if (item.address == res.address) { exists = true; break; }
     }
-    if(!exists && ble_results.size() < 20) ble_results.push_back(res);
+    if (!exists && ble_results.size() < MAX_BLE_RESULTS) ble_results.push_back(res);
 }
 
 bool led = true;
