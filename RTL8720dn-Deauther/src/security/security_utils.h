@@ -67,4 +67,26 @@ static inline String urlDecode(const String& src) {
     return out;
 }
 
+// Safely validate and decode a hex string into a caller-provided fixed buffer.
+static inline bool decodeHexPayload(const String& hex_data, uint8_t* out_buf, size_t max_out_len, size_t* out_len) {
+    if (!out_buf || !out_len || max_out_len == 0) return false;
+    *out_len = 0;
+
+    unsigned int slen = hex_data.length();
+    if (slen == 0 || (slen % 2) != 0) return false;
+
+    size_t byte_len = slen / 2;
+    if (byte_len > max_out_len) return false;
+
+    for (size_t i = 0; i < byte_len; i++) {
+        int hi = hexNibble(hex_data[i * 2]);
+        int lo = hexNibble(hex_data[i * 2 + 1]);
+        if (hi < 0 || lo < 0) return false;
+        out_buf[i] = (uint8_t)((hi << 4) | lo);
+    }
+
+    *out_len = byte_len;
+    return true;
+}
+
 #endif // SECURITY_UTILS_H
