@@ -54,9 +54,23 @@ static void test_html_escape() {
                  "&#39;&quot; onfocus=&quot;alert(document.cookie)&quot;");
 }
 
+static void test_url_decode() {
+    ASSERT_STREQ(urlDecode(""), "");
+    ASSERT_STREQ(urlDecode("AA%3ABB%3ACC%3A11%3A22%3A33"), "AA:BB:CC:11:22:33");
+    ASSERT_STREQ(urlDecode("My+Home+WiFi"), "My Home WiFi");
+    ASSERT_STREQ(urlDecode("SSID1%0ASSID2%0d%0a"), "SSID1\nSSID2\r\n");
+    // Null byte (%00) must be dropped to block C-string truncation injection
+    ASSERT_STREQ(urlDecode("prefix%00injected"), "prefixinjected");
+    // Malformed or truncated percent sequences remain literal without OOB reads
+    ASSERT_STREQ(urlDecode("abc%"), "abc%");
+    ASSERT_STREQ(urlDecode("abc%A"), "abc%A");
+    ASSERT_STREQ(urlDecode("abc%ZZ123"), "abc%ZZ123");
+}
+
 int main() {
     std::printf("Running RTL8720dn security unit tests...\n");
     test_html_escape();
+    test_url_decode();
     if (g_tests_failed > 0) {
         std::fprintf(stderr, "FAILED: %d / %d assertions\n", g_tests_failed, g_tests_run);
         return 1;
