@@ -902,23 +902,21 @@ void loop() {
           BLE.beginCentral(1);
           // AmebaD kết nối qua configConnection
           if (BLE.configConnection()->connect((char*)mac.c_str(), GAP_REMOTE_ADDR_LE_PUBLIC, 2000)) {
-              BLEClient* pClient = BLE.addClient(0); 
-              pClient->discoverServices();
-              unsigned long start = millis();
-              while(!pClient->discoveryDone() && millis() - start < 5000) delay(100);
-              
-              BLERemoteService* pService = pClient->getService(service_uuid.c_str());
-              if (pService != nullptr) {
-                  BLERemoteCharacteristic* pChar = pService->getCharacteristic(char_uuid.c_str());
-                  if (pChar != nullptr) {
-                      int len = hex_data.length() / 2;
-                      if (len > 0) {
-                          uint8_t val[len];
-                          for (int i = 0; i < len; i++) {
-                              String part = hex_data.substring(i*2, i*2+2);
-                              val[i] = (uint8_t) strtol(part.c_str(), NULL, 16);
+              BLEClient* pClient = BLE.addClient(0);
+              if (pClient != nullptr) {
+                  pClient->discoverServices();
+                  unsigned long start = millis();
+                  while(!pClient->discoveryDone() && millis() - start < 5000) delay(100);
+                  
+                  BLERemoteService* pService = pClient->getService(service_uuid.c_str());
+                  if (pService != nullptr) {
+                      BLERemoteCharacteristic* pChar = pService->getCharacteristic(char_uuid.c_str());
+                      if (pChar != nullptr) {
+                          uint8_t val[MAX_BLE_WRITE_BYTES];
+                          size_t decoded_len = 0;
+                          if (decodeHexPayload(hex_data, val, sizeof(val), &decoded_len) && decoded_len > 0) {
+                              pChar->setData(val, (int)decoded_len);
                           }
-                          pChar->setData(val, len);
                       }
                   }
               }
