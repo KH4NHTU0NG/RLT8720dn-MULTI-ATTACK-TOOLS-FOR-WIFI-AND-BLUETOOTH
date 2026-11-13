@@ -303,9 +303,9 @@ static void _draw_footer(uint32_t start_ms) {
 
 static void _draw_big_num(int x, int y, uint32_t num) {
     char buf[12];
-    if      (num >= 1000000) { sprintf(buf, "%d.%dM", (int)(num/1000000), (int)((num%1000000)/100000)); _text(x, y, buf, 2); }
-    else if (num >= 100000)  { sprintf(buf, "%dK",    (int)(num/1000)); _text(x, y, buf, 2); }
-    else                     { sprintf(buf, "%lu",    (unsigned long)num); _text(x, y, buf, 2); }
+    if      (num >= 1000000) { snprintf(buf, sizeof(buf), "%d.%dM", (int)(num/1000000), (int)((num%1000000)/100000)); _text(x, y, buf, 2); }
+    else if (num >= 100000)  { snprintf(buf, sizeof(buf), "%dK",    (int)(num/1000)); _text(x, y, buf, 2); }
+    else                     { snprintf(buf, sizeof(buf), "%lu",    (unsigned long)num); _text(x, y, buf, 2); }
 }
 
 // ===================================================================
